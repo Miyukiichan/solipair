@@ -37,25 +37,19 @@
             this.lP2Discard = new System.Windows.Forms.Label();
             this.pP2Deck = new System.Windows.Forms.Panel();
             this.lP2Deck = new System.Windows.Forms.Label();
-            this.pP1 = new System.Windows.Forms.Panel();
-            this.pBoard = new System.Windows.Forms.Panel();
-            this.pP2 = new System.Windows.Forms.Panel();
             this.bReset = new System.Windows.Forms.Button();
             this.lPlayerTurn = new System.Windows.Forms.Label();
             this.pP1Deck.SuspendLayout();
             this.pP1Discard.SuspendLayout();
             this.pP2Discard.SuspendLayout();
             this.pP2Deck.SuspendLayout();
-            this.pP1.SuspendLayout();
-            this.pBoard.SuspendLayout();
-            this.pP2.SuspendLayout();
             this.SuspendLayout();
             // 
             // pP1Deck
             // 
             this.pP1Deck.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pP1Deck.Controls.Add(this.lP1Deck);
-            this.pP1Deck.Location = new System.Drawing.Point(3, 1);
+            this.pP1Deck.Location = new System.Drawing.Point(21, 474);
             this.pP1Deck.Name = "pP1Deck";
             this.pP1Deck.Size = new System.Drawing.Size(106, 150);
             this.pP1Deck.TabIndex = 0;
@@ -80,7 +74,7 @@
             this.pP1Discard.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pP1Discard.Controls.Add(this.lP1DiscardTop);
             this.pP1Discard.Controls.Add(this.lP1Discard);
-            this.pP1Discard.Location = new System.Drawing.Point(141, 1);
+            this.pP1Discard.Location = new System.Drawing.Point(159, 474);
             this.pP1Discard.Name = "pP1Discard";
             this.pP1Discard.Size = new System.Drawing.Size(106, 150);
             this.pP1Discard.TabIndex = 1;
@@ -117,7 +111,7 @@
             // 
             this.pCard1.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.pCard1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pCard1.Location = new System.Drawing.Point(73, 10);
+            this.pCard1.Location = new System.Drawing.Point(512, 30);
             this.pCard1.Name = "pCard1";
             this.pCard1.Size = new System.Drawing.Size(112, 433);
             this.pCard1.TabIndex = 2;
@@ -128,7 +122,7 @@
             // 
             this.pCard4.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.pCard4.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pCard4.Location = new System.Drawing.Point(456, 10);
+            this.pCard4.Location = new System.Drawing.Point(895, 30);
             this.pCard4.Name = "pCard4";
             this.pCard4.Size = new System.Drawing.Size(112, 433);
             this.pCard4.TabIndex = 3;
@@ -139,7 +133,7 @@
             // 
             this.pCard3.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.pCard3.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pCard3.Location = new System.Drawing.Point(329, 10);
+            this.pCard3.Location = new System.Drawing.Point(768, 30);
             this.pCard3.Name = "pCard3";
             this.pCard3.Size = new System.Drawing.Size(112, 433);
             this.pCard3.TabIndex = 3;
@@ -150,7 +144,7 @@
             // 
             this.pCard2.Anchor = System.Windows.Forms.AnchorStyles.Top;
             this.pCard2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.pCard2.Location = new System.Drawing.Point(200, 10);
+            this.pCard2.Location = new System.Drawing.Point(639, 30);
             this.pCard2.Name = "pCard2";
             this.pCard2.Size = new System.Drawing.Size(112, 433);
             this.pCard2.TabIndex = 3;
@@ -163,7 +157,7 @@
             this.pP2Discard.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pP2Discard.Controls.Add(this.lP2DiscardTop);
             this.pP2Discard.Controls.Add(this.lP2Discard);
-            this.pP2Discard.Location = new System.Drawing.Point(206, 1);
+            this.pP2Discard.Location = new System.Drawing.Point(1209, 474);
             this.pP2Discard.Name = "pP2Discard";
             this.pP2Discard.Size = new System.Drawing.Size(104, 150);
             this.pP2Discard.TabIndex = 3;
@@ -199,7 +193,7 @@
             this.pP2Deck.Anchor = System.Windows.Forms.AnchorStyles.None;
             this.pP2Deck.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.pP2Deck.Controls.Add(this.lP2Deck);
-            this.pP2Deck.Location = new System.Drawing.Point(343, 0);
+            this.pP2Deck.Location = new System.Drawing.Point(1345, 474);
             this.pP2Deck.Name = "pP2Deck";
             this.pP2Deck.Size = new System.Drawing.Size(104, 150);
             this.pP2Deck.TabIndex = 2;
@@ -218,40 +212,6 @@
             this.lP2Deck.TabIndex = 0;
             this.lP2Deck.Text = "36";
             this.lP2Deck.MouseClick += new System.Windows.Forms.MouseEventHandler(this.pP2Deck_MouseClick);
-            // 
-            // pP1
-            // 
-            this.pP1.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.pP1.Controls.Add(this.pP1Deck);
-            this.pP1.Controls.Add(this.pP1Discard);
-            this.pP1.Location = new System.Drawing.Point(12, 474);
-            this.pP1.Name = "pP1";
-            this.pP1.Size = new System.Drawing.Size(493, 162);
-            this.pP1.TabIndex = 4;
-            // 
-            // pBoard
-            // 
-            this.pBoard.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.pBoard.Controls.Add(this.pCard1);
-            this.pBoard.Controls.Add(this.pCard2);
-            this.pBoard.Controls.Add(this.pCard3);
-            this.pBoard.Controls.Add(this.pCard4);
-            this.pBoard.Location = new System.Drawing.Point(450, 2);
-            this.pBoard.Name = "pBoard";
-            this.pBoard.Size = new System.Drawing.Size(645, 466);
-            this.pBoard.TabIndex = 5;
-            // 
-            // pP2
-            // 
-            this.pP2.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.pP2.Controls.Add(this.pP2Deck);
-            this.pP2.Controls.Add(this.pP2Discard);
-            this.pP2.Location = new System.Drawing.Point(1009, 474);
-            this.pP2.Name = "pP2";
-            this.pP2.Size = new System.Drawing.Size(450, 162);
-            this.pP2.TabIndex = 6;
             // 
             // bReset
             // 
@@ -279,11 +239,16 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1471, 648);
+            this.Controls.Add(this.pCard1);
+            this.Controls.Add(this.pCard2);
+            this.Controls.Add(this.pP2Deck);
+            this.Controls.Add(this.pCard3);
+            this.Controls.Add(this.pP1Deck);
+            this.Controls.Add(this.pCard4);
+            this.Controls.Add(this.pP2Discard);
             this.Controls.Add(this.lPlayerTurn);
+            this.Controls.Add(this.pP1Discard);
             this.Controls.Add(this.bReset);
-            this.Controls.Add(this.pP2);
-            this.Controls.Add(this.pBoard);
-            this.Controls.Add(this.pP1);
             this.MinimumSize = new System.Drawing.Size(1487, 687);
             this.Name = "Form1";
             this.Text = "Form1";
@@ -295,9 +260,6 @@
             this.pP2Discard.PerformLayout();
             this.pP2Deck.ResumeLayout(false);
             this.pP2Deck.PerformLayout();
-            this.pP1.ResumeLayout(false);
-            this.pBoard.ResumeLayout(false);
-            this.pP2.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -319,9 +281,6 @@
         private Label lP2Discard;
         private Panel pP2Deck;
         private Label lP2Deck;
-        private Panel pP1;
-        private Panel pBoard;
-        private Panel pP2;
         private Button bReset;
         private Label lPlayerTurn;
     }

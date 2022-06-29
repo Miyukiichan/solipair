@@ -10,23 +10,29 @@ namespace Solipair {
         public Stack<GUICard> skGUI1;
         public Stack<GUICard> skGUI2;
         public Stack<GUICard> skGUI3;
-        public Stack<GUICard> skGUI4;
-        private void InitCurrent(Panel p, Label l) {
+        public Stack<GUICard> skGUI4; 
+        private Point _mouseDownLocation;
+        private void InitCurrent(out Panel p, out Label l) {
+            p = new Panel();
+            l = new Label();
             p.BorderStyle = BorderStyle.FixedSingle;
             p.Width = CardWidth;
             p.Height = CardHeight;
             l.Parent = p;
+            p.Parent = this;
+            InitCurrentEvents(p);
+            InitCurrentEvents(l);
         }
-        private void InitCards(Panel p) {
-            var conts = p.Controls.Cast<Control>();
-            foreach (var cont in conts) {
-                if (cont == null || cont.Tag == null) continue;
-                if (cont.Tag.ToString() == "Card") {
-                    cont.Height = CardHeight;
-                    cont.Width = CardWidth;
-                }
-            }
+        private void InitCard(Panel p) {
+            p.Height = CardHeight;
+            p.Width = CardWidth;
         }
+        private void InitCurrentEvents(Control c) {
+            c.MouseMove += CurrentMoved;
+            c.MouseDown += CurrentMouseDown;
+            c.MouseUp += CurrentMouseUp;
+        }
+
         public Form1() {
             InitializeComponent();
             skGUI1 = new Stack<GUICard>();
@@ -34,25 +40,73 @@ namespace Solipair {
             skGUI3 = new Stack<GUICard>();
             skGUI4 = new Stack<GUICard>();
             //Init card sizes
-            InitCards(pP1);
-            InitCards(pP2);
+            InitCard(pP1Deck);
+            InitCard(pP1Discard);
+            InitCard(pP2Deck);
+            InitCard(pP2Discard);
             //Init current drawn card placeholders
-            pP1Current = new Panel();
-            lP1Current = new Label();
-            pP2Current = new Panel();
-            lP2Current = new Label();
-            InitCurrent(pP1Current, lP1Current);
-            InitCurrent(pP2Current, lP2Current);
-            pP1Current.Parent = pP1;
-            pP2Current.Parent = pP2;
+            InitCurrent(out pP1Current, out lP1Current);
+            InitCurrent(out pP2Current, out lP2Current);
             pP1Current.Anchor = AnchorStyles.Right;
             pP2Current.Anchor = AnchorStyles.Left;
-            pP1Current.Left = pP1.Width - pP1Current.Width - 20;
-            pP2Current.Left = 0;
+
             //Start game
             controller = new Controller();
             Reset();
         }
+
+        private void CurrentMouseDown(object? sender, MouseEventArgs e) {
+            _mouseDownLocation = e.Location;
+        }
+
+        private void CurrentMoved(object? sender, MouseEventArgs e) {
+            if (e.Button != MouseButtons.Left) return;
+            Panel? p = sender as Panel;
+            //Assume event is coming from the label if not the panel - we can get the panel from the label parent
+            if (p == null) {
+                Label? l = sender as Label;
+                if (l == null) return;
+                p = l.Parent as Panel;
+                if (p == null) return;
+            }
+            this.Controls.SetChildIndex(p, 0);
+            p.Location = new Point(e.X + p.Left - _mouseDownLocation.X, e.Y + p.Top - _mouseDownLocation.Y);
+        }
+        private void ResetCardPos() {
+            pP1Current.Location = new Point(pP1Discard.Right + 20, pP1Discard.Top);
+            pP2Current.Location = new Point(pP2Discard.Left - pP2Current.Width - 20, pP2Discard.Top);
+        }
+        private void CurrentMouseUp(object? sender, MouseEventArgs e) {
+            Panel? p = sender as Panel;
+            // Assume event is coming from the label if not the panel - we can get the panel from the label parent
+            if (p == null) {
+                Label? l = sender as Label;
+                if (l == null) return;
+                p = l.Parent as Panel;
+                if (p == null) return;
+            }
+            var c = new Point(p.Left + (p.Width / 2), p.Top + (p.Height / 2));
+            var disc = pP1Discard;
+            if (p == pP2Current)
+                disc = pP2Discard;
+            if (c.X < disc.Right && c.X > disc.Left && c.Y > disc.Top && c.Y < disc.Bottom) {
+                if (p == pP1Current)
+                    pP1Discard_MouseClick(sender, e);
+                else
+                    pP2Discard_MouseClick(sender, e);
+            }
+            else if (c.X < pCard1.Right && c.X > pCard1.Left && c.Y > pCard1.Top && c.Y < pCard1.Bottom)
+                pCard1_MouseClick(sender, e);
+            else if (c.X < pCard2.Right && c.X > pCard2.Left && c.Y > pCard2.Top && c.Y < pCard2.Bottom)
+                pCard2_MouseClick(sender, e);
+            else if (c.X < pCard3.Right && c.X > pCard3.Left && c.Y > pCard3.Top && c.Y < pCard3.Bottom)
+                pCard3_MouseClick(sender, e);
+            else if (c.X < pCard4.Right && c.X > pCard4.Left && c.Y > pCard4.Top && c.Y < pCard4.Bottom)
+                pCard4_MouseClick(sender, e);
+            else
+                ResetCardPos();
+        }
+
         private void ResetGUIStack(Stack<GUICard> sk, Panel p) {
             while (sk.Any()) {
                 p.Controls.Remove(sk.Pop().Panel);
@@ -79,6 +133,7 @@ namespace Solipair {
             if (card == null) return;
             lP1Current.Text = card.Text();
             pP1Current.Show();
+            ResetCardPos();
             lP1Deck.Text = controller.P1.Deck.Count().ToString();
         }
         private void bReset_Click(object sender, EventArgs e) {
@@ -89,6 +144,7 @@ namespace Solipair {
             if (card == null) return;
             lP2Current.Text = card.Text();
             pP2Current.Show();
+            ResetCardPos();
             lP2Deck.Text = controller.P2.Deck.Count().ToString();
         }
         public void SwitchPlayer() {
@@ -133,7 +189,7 @@ namespace Solipair {
             return c;
         }
 
-        private void pP1Discard_MouseClick(object sender, MouseEventArgs e) {
+        private void pP1Discard_MouseClick(object? sender, MouseEventArgs e) {
             if (controller.ActivePlayer != controller.P1) return;
             var discarded = controller.Discard();
             if (!discarded) return;
@@ -143,7 +199,7 @@ namespace Solipair {
             SwitchPlayer();
         }
 
-        private void pP2Discard_MouseClick(object sender, MouseEventArgs e) {
+        private void pP2Discard_MouseClick(object? sender, MouseEventArgs e) {
             if (controller.ActivePlayer != controller.P2) return;
             var discarded = controller.Discard();
             if (!discarded) return;
