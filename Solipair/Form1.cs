@@ -13,6 +13,7 @@ namespace Solipair {
         public Stack<GUICard> skGUI4; 
         private Point _mouseDownLocation;
         private Panel? _startingPanel;
+        private bool _gameOver;
         private void InitCurrent(out Panel p, out Label l) {
             p = new Panel();
             l = new Label();
@@ -36,6 +37,7 @@ namespace Solipair {
 
         public Form1() {
             InitializeComponent();
+            _gameOver = false;
             skGUI1 = new Stack<GUICard>();
             skGUI2 = new Stack<GUICard>();
             skGUI3 = new Stack<GUICard>();
@@ -57,6 +59,7 @@ namespace Solipair {
         }
 
         private void CardMouseDown(object? sender, MouseEventArgs e) {
+            if (_gameOver) return;
             _mouseDownLocation = e.Location;
             Panel? p = GetSenderPanel(sender);
             if (p == null) return;
@@ -77,6 +80,7 @@ namespace Solipair {
         }
 
         private void CardMoved(object? sender, MouseEventArgs e) {
+            if (_gameOver) return;
             if (e.Button != MouseButtons.Left) return;
             Panel? p = GetSenderPanel(sender);
             if (p == null) return;
@@ -119,17 +123,13 @@ namespace Solipair {
             ResetStack(skGUI4, pCard4);
         }
         private void CurrentMouseUp(object? sender, MouseEventArgs e) {
+            if (_gameOver) return;
             Panel? p = GetSenderPanel(sender);
             if (p == null) return;
-            var disc = pP1Discard;
-            if (p == pP2Current)
-                disc = pP2Discard;
-            if (Collided(p, disc)) {
-                if (p == pP1Current)
-                    pP1Discard_MouseClick(sender, e);
-                else
-                    pP2Discard_MouseClick(sender, e);
-            }
+            if (Collided(p, pP1Discard))
+                pP1Discard_MouseClick(sender, e);
+            if (Collided(p, pP2Discard))
+                pP2Discard_MouseClick(sender, e);
             else if (Collided(p, pCard1))
                 pCard1_MouseClick(sender, e);
             else if (Collided(p, pCard2))
@@ -143,6 +143,7 @@ namespace Solipair {
         }
 
         private void CardMouseUp(object? sender, MouseEventArgs e) {
+            if (_gameOver) return;
             if (_startingPanel == null) return;
             Panel? p = GetSenderPanel(sender);
             if (p == null) return;
@@ -208,6 +209,7 @@ namespace Solipair {
             }
         }
         public void Reset() {
+            _gameOver = false;
             pP1Current.Hide();
             pP2Current.Hide();
             ResetGUIStack(skGUI1, pCard1);
@@ -224,6 +226,7 @@ namespace Solipair {
             lP2DiscardTop.Text = "";
         }
         private void pP1Deck_MouseClick(object sender, MouseEventArgs e) {
+            if (_gameOver) return;
             Card? card = controller.P1Draw();
             if (card == null) return;
             lP1Current.Text = card.Text();
@@ -235,6 +238,7 @@ namespace Solipair {
             Reset();
         }
         private void pP2Deck_MouseClick(object sender, MouseEventArgs e) {
+            if (_gameOver) return;
             Card? card = controller.P2Draw();
             if (card == null) return;
             lP2Current.Text = card.Text();
@@ -245,25 +249,33 @@ namespace Solipair {
         public void SwitchPlayer() {
             pP1Current.Hide();
             pP2Current.Hide();
-            controller.SwitchPlayer();
-            lPlayerTurn.Text = controller.PlayerTurn();
+            _gameOver = controller.SwitchPlayer();
+            SetDeckText();
+            if (!_gameOver)
+                lPlayerTurn.Text = controller.PlayerTurn();
+            else
+                lPlayerTurn.Text = controller.WinnerText();
         }
         private void pCard1_MouseClick(object? sender, MouseEventArgs e) {
+            if (_gameOver) return;
             var c = AddCard(controller.sk1, skGUI1, pCard1);
             if (c == null) return;
             c.Panel.MouseClick += pCard1_MouseClick;
         }
         private void pCard2_MouseClick(object? sender, MouseEventArgs e) {
+            if (_gameOver) return;
             var c = AddCard(controller.sk2, skGUI2, pCard2);
             if (c == null) return;
             c.Panel.MouseClick += pCard2_MouseClick;
         }
         private void pCard3_MouseClick(object? sender, MouseEventArgs e) {
+            if (_gameOver) return;
             var c = AddCard(controller.sk3, skGUI3, pCard3);
             if (c == null) return;
             c.Panel.MouseClick += pCard3_MouseClick;
         }
         private void pCard4_MouseClick(object? sender, MouseEventArgs e) {
+            if (_gameOver) return;
             var c = AddCard(controller.sk4, skGUI4, pCard4);
             if (c == null) return;
             c.Panel.MouseClick += pCard4_MouseClick;
@@ -285,11 +297,9 @@ namespace Solipair {
             c.Panel.Top = GetCardPos(skGUI);
             p.Controls.SetChildIndex(c.Panel, 0);
             if (skGUI.Count == 1) {
-                //c.Panel.MouseMove += CardMoved;
                 c.Panel.MouseMove += PlayCardMoved;
                 c.Panel.MouseDown += CardMouseDown;
                 c.Panel.MouseUp += CardMouseUp;
-                //c.Label.MouseMove += CardMoved;
                 c.Label.MouseMove += PlayCardMoved;
                 c.Label.MouseDown += CardMouseDown;
                 c.Label.MouseUp += CardMouseUp;
@@ -299,6 +309,7 @@ namespace Solipair {
         }
 
         private void PlayCardMoved(object? sender, MouseEventArgs e) {
+            if (_gameOver) return;
             if (e.Button != MouseButtons.Left) return;
             Stack<GUICard>? gc = null;
             if (_startingPanel == pCard1)
@@ -314,23 +325,46 @@ namespace Solipair {
                 CardMoved(c.Panel, e);
             }
         }
-
+        private void SetDeckText() {
+            if (controller.P1.Discard.Any()) {
+                lP1DiscardTop.Text = controller.P1.Discard.Peek().Text();
+                lP1Discard.Text = controller.P1.Discard.Count().ToString();
+            }
+            else {
+                lP1DiscardTop.Text = "";
+                lP1Discard.Text = "0";
+            }
+            if (controller.P2.Discard.Any()) {
+                lP2DiscardTop.Text = controller.P2.Discard.Peek().Text();
+                lP2Discard.Text = controller.P2.Discard.Count().ToString();
+            }
+            else {
+                lP2DiscardTop.Text = "";
+                lP2Discard.Text = "0";
+            }
+            lP1Deck.Text = controller.P1.Deck.Count().ToString();
+            lP2Deck.Text = controller.P2.Deck.Count().ToString();
+        }
         private void pP1Discard_MouseClick(object? sender, MouseEventArgs e) {
-            if (controller.ActivePlayer != controller.P1) return;
-            var discarded = controller.Discard();
-            if (!discarded) return;
-            lP1DiscardTop.Text = controller.ActivePlayer.Discard.Peek().Text();
-            lP1Discard.Text = controller.ActivePlayer.Discard.Count().ToString();
+            if (_gameOver) return;
+            if (controller.ActivePlayer != controller.P1) {
+                if (!controller.DiscardOpponent()) return;
+            }
+            else {
+                if (!controller.Discard()) return;
+            }
             pP1Current.Hide();
             SwitchPlayer();
         }
 
         private void pP2Discard_MouseClick(object? sender, MouseEventArgs e) {
-            if (controller.ActivePlayer != controller.P2) return;
-            var discarded = controller.Discard();
-            if (!discarded) return;
-            lP2DiscardTop.Text = controller.ActivePlayer.Discard.Peek().Text();
-            lP2Discard.Text = controller.ActivePlayer.Discard.Count().ToString();
+            if (_gameOver) return;
+            if (controller.ActivePlayer != controller.P2) {
+                if (!controller.DiscardOpponent()) return;
+            }
+            else {
+                if (!controller.Discard()) return;
+            }
             pP2Current.Hide();
             SwitchPlayer();
         }
@@ -435,6 +469,9 @@ namespace Solipair {
         public string PlayerTurn() {
             return $"{ActivePlayer.Name}'s turn";
         }
+        public string WinnerText() {
+            return $"{ActivePlayer.Name} wins";
+        }
         public bool CanAddToStack(Stack<Card> sk, Card c, bool checkCurrent = true) {
             if (checkCurrent && ActivePlayer.Current != c) return false;
             if (sk.Any()) {
@@ -458,16 +495,51 @@ namespace Solipair {
                 to.Push(tmp.Pop());
             return true;
         }
-        public void SwitchPlayer() {
+        private bool ResetDeck(Player p) {
+            if (!p.Deck.Any()) {
+                if (!p.Discard.Any())
+                    return true;
+                else {
+                    while (p.Discard.Any())
+                        p.Deck.Push(p.Discard.Pop());
+                }
+            }
+            return false;
+        }
+        //Returns a bool for whether the game is over - if it is, don't swap the current player
+        public bool SwitchPlayer() {
             ActivePlayer.Current = null;
-            if (ActivePlayer == P1)
+            if (ActivePlayer == P1) {
+                if (ResetDeck(P1))
+                    return true;
                 ActivePlayer = P2;
-            else
+            }
+            else {
+                if (ResetDeck(P2))
+                    return true;
                 ActivePlayer = P1;
+            }
+            return false;
         }
         public bool Discard() {
             if (ActivePlayer.Current == null) return false;
             ActivePlayer.Discard.Push(ActivePlayer.Current);
+            ActivePlayer.Current = null;
+            return true;
+        }
+        public bool DiscardOpponent() {
+            if (ActivePlayer.Current == null) return false;
+            var opponent = P1;
+            if (ActivePlayer == P1)
+            opponent = P2;
+            if (!opponent.Discard.Any()) return false;
+            var distance = Math.Abs(opponent.Discard.Peek().Value - ActivePlayer.Current.Value);
+            if (distance != 0) {
+                if (opponent.Discard.Peek().Suit != ActivePlayer.Current.Suit)
+                    return false;
+                if (distance != 1 && distance != 12) return false;
+            }
+            opponent.Discard.Push(ActivePlayer.Current);
             ActivePlayer.Current = null;
             return true;
         }
