@@ -217,6 +217,22 @@ namespace Solipair {
             ResetGUIStack(skGUI3, pCard3);
             ResetGUIStack(skGUI4, pCard4);
             controller.StartGame();
+
+            var c = AddCard(controller.sk1, skGUI1, pCard1, controller.P1.Draw());
+            if (c != null)
+                c.Panel.MouseClick += pCard1_MouseClick;
+            c = AddCard(controller.sk2, skGUI2, pCard2, controller.P1.Draw());
+            if (c != null)
+                c.Panel.MouseClick += pCard2_MouseClick;
+            SwitchPlayer();
+            c = AddCard(controller.sk3, skGUI3, pCard3, controller.P2.Draw());
+            if (c != null)
+                c.Panel.MouseClick += pCard3_MouseClick;
+            c = AddCard(controller.sk4, skGUI4, pCard4, controller.P2.Draw());
+            if (c != null)
+                c.Panel.MouseClick += pCard4_MouseClick;
+            SwitchPlayer();
+
             lP1Deck.Text = controller.P1.Deck.Count().ToString();
             lP2Deck.Text = controller.P2.Deck.Count().ToString();
             lPlayerTurn.Text = controller.PlayerTurn();
@@ -246,15 +262,19 @@ namespace Solipair {
             ResetCardPos();
             lP2Deck.Text = controller.P2.Deck.Count().ToString();
         }
-        public void SwitchPlayer() {
-            pP1Current.Hide();
-            pP2Current.Hide();
-            _gameOver = controller.SwitchPlayer();
-            SetDeckText();
+        private void CheckGameOver() {
+            _gameOver = controller.GameOver();
             if (!_gameOver)
                 lPlayerTurn.Text = controller.PlayerTurn();
             else
                 lPlayerTurn.Text = controller.WinnerText();
+        }
+        public void SwitchPlayer() {
+            pP1Current.Hide();
+            pP2Current.Hide();
+            controller.SwitchPlayer();
+            SetDeckText();
+            CheckGameOver();
         }
         private void pCard1_MouseClick(object? sender, MouseEventArgs e) {
             if (_gameOver) return;
@@ -285,9 +305,11 @@ namespace Solipair {
                 index = skGUI.Count() - 1;
             return index * 25;
         }
-        private GUICard? AddCard(Stack<Card>? sk, Stack<GUICard>? skGUI, Panel p) {
+        private GUICard? AddCard(Stack<Card>? sk, Stack<GUICard>? skGUI, Panel p, Card? current = null) {
             if (sk == null || skGUI == null) return null;
-            Card? current = controller.ActivePlayer.Current;
+            if (current == null) {
+                current = controller.ActivePlayer.Current;
+            }
             if (current == null) return null;
             bool added = controller.AddToStack(sk, current);
             if (!added) return null;
@@ -304,7 +326,10 @@ namespace Solipair {
                 c.Label.MouseDown += CardMouseDown;
                 c.Label.MouseUp += CardMouseUp;
             }
-            SwitchPlayer();
+            pP1Current.Hide();
+            pP2Current.Hide();
+            controller.ResetDeck();
+            CheckGameOver();
             return c;
         }
 
@@ -326,47 +351,49 @@ namespace Solipair {
             }
         }
         private void SetDeckText() {
-            if (controller.P1.Discard.Any()) {
+            if (controller.P1.Discard.Any()) 
                 lP1DiscardTop.Text = controller.P1.Discard.Peek().Text();
-                lP1Discard.Text = controller.P1.Discard.Count().ToString();
-            }
-            else {
+            else 
                 lP1DiscardTop.Text = "";
-                lP1Discard.Text = "0";
-            }
-            if (controller.P2.Discard.Any()) {
+            if (controller.P2.Discard.Any()) 
                 lP2DiscardTop.Text = controller.P2.Discard.Peek().Text();
-                lP2Discard.Text = controller.P2.Discard.Count().ToString();
-            }
-            else {
+            else 
                 lP2DiscardTop.Text = "";
-                lP2Discard.Text = "0";
-            }
             lP1Deck.Text = controller.P1.Deck.Count().ToString();
             lP2Deck.Text = controller.P2.Deck.Count().ToString();
+            lP2Discard.Text = controller.P2.Discard.Count().ToString();
+            lP1Discard.Text = controller.P1.Discard.Count().ToString();
         }
         private void pP1Discard_MouseClick(object? sender, MouseEventArgs e) {
             if (_gameOver) return;
             if (controller.ActivePlayer != controller.P1) {
                 if (!controller.DiscardOpponent()) return;
+                CheckGameOver();
+                pP2Current.Hide();
+                SetDeckText();
+                controller.ResetDeck();
             }
             else {
                 if (!controller.Discard()) return;
+                SwitchPlayer();
+                pP1Current.Hide();
             }
-            pP1Current.Hide();
-            SwitchPlayer();
         }
 
         private void pP2Discard_MouseClick(object? sender, MouseEventArgs e) {
             if (_gameOver) return;
             if (controller.ActivePlayer != controller.P2) {
                 if (!controller.DiscardOpponent()) return;
+                CheckGameOver();
+                pP1Current.Hide();
+                SetDeckText();
+                controller.ResetDeck();
             }
             else {
                 if (!controller.Discard()) return;
+                SwitchPlayer();
+                pP2Current.Hide();
             }
-            pP2Current.Hide();
-            SwitchPlayer();
         }
     }
     public class GUICard {
@@ -495,31 +522,29 @@ namespace Solipair {
                 to.Push(tmp.Pop());
             return true;
         }
-        private bool ResetDeck(Player p) {
+        public void ResetDeck(Player? p = null) {
+            if (p == null)
+                p = ActivePlayer;
             if (!p.Deck.Any()) {
-                if (!p.Discard.Any())
-                    return true;
-                else {
-                    while (p.Discard.Any())
-                        p.Deck.Push(p.Discard.Pop());
-                }
+                while (p.Discard.Any())
+                    p.Deck.Push(p.Discard.Pop());
             }
-            return false;
         }
-        //Returns a bool for whether the game is over - if it is, don't swap the current player
-        public bool SwitchPlayer() {
+        public void SwitchPlayer() {
             ActivePlayer.Current = null;
             if (ActivePlayer == P1) {
-                if (ResetDeck(P1))
-                    return true;
-                ActivePlayer = P2;
+                ResetDeck(P2);
+                if (!GameOver())
+                    ActivePlayer = P2;
             }
             else {
-                if (ResetDeck(P2))
-                    return true;
-                ActivePlayer = P1;
+                ResetDeck(P1);
+                if (!GameOver())
+                    ActivePlayer = P1;
             }
-            return false;
+        }
+        public bool GameOver() {
+            return !ActivePlayer.Deck.Any() && !ActivePlayer.Discard.Any();
         }
         public bool Discard() {
             if (ActivePlayer.Current == null) return false;
@@ -531,7 +556,7 @@ namespace Solipair {
             if (ActivePlayer.Current == null) return false;
             var opponent = P1;
             if (ActivePlayer == P1)
-            opponent = P2;
+                opponent = P2;
             if (!opponent.Discard.Any()) return false;
             var distance = Math.Abs(opponent.Discard.Peek().Value - ActivePlayer.Current.Value);
             if (distance != 0) {
